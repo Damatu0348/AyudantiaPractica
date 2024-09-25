@@ -13,7 +13,7 @@ namespace api.src.models
         public string Email { get; set; } = string.Empty;
 
         //Entityframework relationships
-        public List<Product> Products {get; set;} = [];
+        public List<Product> Products {get;} = [];
 
         public int RoleId {get; set;}
 
