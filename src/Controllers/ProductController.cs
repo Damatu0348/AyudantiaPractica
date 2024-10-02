@@ -22,17 +22,17 @@ namespace api.src.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> GetAll()
         {
-            var products = _context.Products.ToList()//_context.Users.Include(u => u.Role).Include(u => u.Products)ToList();
-            .Select(p => p.ToProductDto());
-            return Ok(products);
+            var products = await _context.Products.ToListAsync();
+            var productDto = products.Select(p => p.ToProductDto());
+            return Ok(productDto);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var product = _context.Products.FirstOrDefault(u => u.Id == id);
+            var product = await _context.Products.FindAsync(id);
             if(product == null)
             {
                 return NotFound();
@@ -41,40 +41,40 @@ namespace api.src.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] CreateProductRequestDto productDto)
+        public async Task<IActionResult> Post([FromBody] CreateProductRequestDto productDto)
         {
             var productModel = productDto.ToProductFromCreateDto();
-            _context.Products.Add(productModel);
-            _context.SaveChanges();
+            await _context.Products.AddAsync(productModel);
+            await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetById), new {id = productModel.Id}, productModel.ToProductDto());
         }
 
         [HttpPut("{id}")]
-        public IActionResult PutId([FromRoute] int id, [FromBody] UpdateProductRequestDto updateDto)
+        public async Task<IActionResult> PutId([FromRoute] int id, [FromBody] UpdateProductRequestDto updateDto)
         {
-            var existingProduct = _context.Products.FirstOrDefault(p => p.Id == id);
-            if(existingProduct == null)
+            var ProductModel = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if(ProductModel == null)
             {
                 return NotFound();
             }
-            existingProduct.Name = updateDto.Name;
-            existingProduct.Price = updateDto.Price;
+            ProductModel.Name = updateDto.Name;
+            ProductModel.Price = updateDto.Price;
 
-            _context.SaveChanges();
-            return Ok(existingProduct);
+            await _context.SaveChangesAsync();
+            return Ok(ProductModel.ToProductDto());
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteId([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.Id == id);
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
             if(product == null)
             {
                 return NotFound();
             }
             _context.Products.Remove(product);
-            _context.SaveChanges();
-            return Ok("Product deleted");
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
 
     }
